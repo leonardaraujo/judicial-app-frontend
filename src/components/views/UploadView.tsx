@@ -1,8 +1,18 @@
 // src/components/views/UploadView.tsx
-import Link from 'next/link';
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { UploadStep } from '../../models/types';
-import { formatFileSize } from '../../utils/file';
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import {
+  Upload,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Shield,
+  Brain,
+  Database,
+} from "lucide-react";
+import { UploadStep } from "../../models/types";
+import { formatFileSize } from "../../utils/file";
 
 interface UploadViewProps {
   file: File | null;
@@ -21,6 +31,25 @@ export const UploadView: React.FC<UploadViewProps> = ({
   onFileChange,
   onSubmit,
 }) => {
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (step === "analyzing") {
+      setCompletedTasks([]);
+      // Simular progreso de subtareas
+      const tasks = ["censurando", "analizando", "guardando"];
+      tasks.forEach((task, index) => {
+        setTimeout(() => {
+          setCompletedTasks((prev) => [...prev, task]);
+        }, (index + 1) * 2000); // 2 segundos por tarea
+      });
+    } else if (step === "done") {
+      setCompletedTasks(["censurando", "analizando", "guardando"]);
+    } else {
+      setCompletedTasks([]);
+    }
+  }, [step]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-teal-50">
       <main className="container mx-auto px-4 py-12">
@@ -32,8 +61,12 @@ export const UploadView: React.FC<UploadViewProps> = ({
                   <Upload className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">Subir Documento PDF</h2>
-                  <p className="text-sm text-muted-foreground">Cargue documentos penales al sistema</p>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Subir Documento PDF
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Cargue documentos penales al sistema
+                  </p>
                 </div>
               </div>
             </div>
@@ -41,7 +74,10 @@ export const UploadView: React.FC<UploadViewProps> = ({
             <div className="p-6">
               <form onSubmit={onSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="file-upload" className="text-base font-medium text-foreground block">
+                  <label
+                    htmlFor="file-upload"
+                    className="text-base font-medium text-foreground block"
+                  >
                     Seleccionar archivo
                   </label>
                   <input
@@ -49,18 +85,23 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     type="file"
                     accept=".pdf"
                     onChange={onFileChange}
-                    disabled={step === 'uploading' || step === 'analyzing'}
+                    disabled={step === "uploading" || step === "analyzing"}
                     className="w-full text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer border border-border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <p className="text-sm text-muted-foreground">Solo archivos PDF. Tamaño máximo: 10MB</p>
+                  <p className="text-sm text-muted-foreground">
+                    Solo archivos PDF. Tamaño máximo: 10MB
+                  </p>
                 </div>
 
-                {file && step === 'idle' && (
+                {file && step === "idle" && (
                   <div className="bg-card border border-primary/20 rounded-lg p-4 flex items-start gap-3">
                     <FileText className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-foreground">
-                        <span className="font-medium">Archivo seleccionado:</span> {file.name}
+                        <span className="font-medium">
+                          Archivo seleccionado:
+                        </span>{" "}
+                        {file.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         ({formatFileSize(file.size)})
@@ -70,62 +111,157 @@ export const UploadView: React.FC<UploadViewProps> = ({
                 )}
 
                 {/* Componente de Estado de Proceso */}
-                {(step === 'uploading' || step === 'analyzing' || step === 'done') && (
+                {(step === "uploading" ||
+                  step === "analyzing" ||
+                  step === "done") && (
                   <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-2 border-slate-200 rounded-xl p-6 shadow-sm">
                     <div className="space-y-4">
                       {/* Paso 1: Subiendo */}
                       <div className="flex items-center gap-4">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
-                          step === 'uploading' ? 'bg-blue-500' : step === 'analyzing' || step === 'done' ? 'bg-green-500' : 'bg-slate-300'
-                        }`}>
-                          {step === 'uploading' ? (
+                        <div
+                          className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
+                            step === "uploading"
+                              ? "bg-blue-500"
+                              : step === "analyzing" || step === "done"
+                              ? "bg-green-500"
+                              : "bg-slate-300"
+                          }`}
+                        >
+                          {step === "uploading" ? (
                             <Loader2 className="w-5 h-5 text-white animate-spin" />
-                          ) : step === 'analyzing' || step === 'done' ? (
+                          ) : step === "analyzing" || step === "done" ? (
                             <CheckCircle2 className="w-5 h-5 text-white" />
                           ) : (
                             <Upload className="w-5 h-5 text-white" />
                           )}
                         </div>
                         <div className="flex-1">
-                          <p className={`font-semibold text-sm ${
-                            step === 'uploading' ? 'text-blue-700' : step === 'analyzing' || step === 'done' ? 'text-green-700' : 'text-slate-500'
-                          }`}>
-                            {step === 'uploading' ? 'Subiendo archivo...' : 'Archivo subido correctamente'}
+                          <p
+                            className={`font-semibold text-sm ${
+                              step === "uploading"
+                                ? "text-blue-700"
+                                : step === "analyzing" || step === "done"
+                                ? "text-green-700"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            {step === "uploading"
+                              ? "Subiendo archivo..."
+                              : "Archivo subido correctamente"}
                           </p>
-                          <p className="text-xs text-slate-500">Enviando documento al servidor</p>
+                          <p className="text-xs text-slate-500">
+                            Enviando documento al servidor
+                          </p>
                         </div>
                       </div>
 
                       {/* Línea conectora */}
-                      <div className={`ml-5 w-0.5 h-6 transition-all ${
-                        step === 'analyzing' || step === 'done' ? 'bg-green-500' : 'bg-slate-300'
-                      }`}></div>
+                      <div
+                        className={`ml-5 w-0.5 h-6 transition-all ${
+                          step === "analyzing" || step === "done"
+                            ? "bg-green-500"
+                            : "bg-slate-300"
+                        }`}
+                      ></div>
 
-                      {/* Paso 2: Analizando */}
+                      {/* Paso 2: Analizando con IA */}
                       <div className="flex items-center gap-4">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
-                          step === 'analyzing' ? 'bg-yellow-500' : step === 'done' ? 'bg-green-500' : 'bg-slate-300'
-                        }`}>
-                          {step === 'analyzing' ? (
+                        <div
+                          className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
+                            step === "analyzing"
+                              ? "bg-yellow-500"
+                              : step === "done"
+                              ? "bg-green-500"
+                              : "bg-slate-300"
+                          }`}
+                        >
+                          {step === "analyzing" ? (
                             <Loader2 className="w-5 h-5 text-white animate-spin" />
-                          ) : step === 'done' ? (
+                          ) : step === "done" ? (
                             <CheckCircle2 className="w-5 h-5 text-white" />
                           ) : (
                             <AlertCircle className="w-5 h-5 text-white" />
                           )}
                         </div>
                         <div className="flex-1">
-                          <p className={`font-semibold text-sm ${
-                            step === 'analyzing' ? 'text-yellow-700' : step === 'done' ? 'text-green-700' : 'text-slate-500'
-                          }`}>
-                            {step === 'analyzing' ? 'Analizando con IA...' : step === 'done' ? 'Análisis completado' : 'Esperando análisis'}
+                          <p
+                            className={`font-semibold text-sm ${
+                              step === "analyzing"
+                                ? "text-yellow-700"
+                                : step === "done"
+                                ? "text-green-700"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            {step === "analyzing"
+                              ? "Analizando con IA..."
+                              : step === "done"
+                              ? "Análisis completado"
+                              : "Esperando análisis"}
                           </p>
-                          <p className="text-xs text-slate-500">Extrayendo información del documento</p>
+                          <p className="text-xs text-slate-500">
+                            Extrayendo información del documento
+                          </p>
                         </div>
                       </div>
 
+                      {/* Subtareas del análisis */}
+                      {step === "analyzing" && (
+                        <div className="ml-5 space-y-3 pt-2 border-l-2 border-yellow-300 pl-4">
+                          <div className="flex items-center gap-3">
+                            {completedTasks.includes("censurando") ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            ) : (
+                              <Loader2 className="w-4 h-4 text-blue-600 animate-spin flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-slate-700">
+                                Censurando datos sensibles
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                Ocultando información personal y sensible
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {completedTasks.includes("analizando") ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            ) : completedTasks.includes("censurando") ? (
+                              <Loader2 className="w-4 h-4 text-purple-600 animate-spin flex-shrink-0" />
+                            ) : (
+                              <Shield className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-slate-700">
+                                Analizando nombres
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                Identificando y procesando entidades
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {completedTasks.includes("guardando") ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            ) : completedTasks.includes("analizando") ? (
+                              <Loader2 className="w-4 h-4 text-green-600 animate-spin flex-shrink-0" />
+                            ) : (
+                              <Database className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-slate-700">
+                                Guardando embeddings
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                Almacenando representaciones vectoriales
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Línea conectora */}
-                      {step === 'done' && (
+                      {step === "done" && (
                         <>
                           <div className="ml-5 w-0.5 h-6 bg-green-500"></div>
 
@@ -135,8 +271,12 @@ export const UploadView: React.FC<UploadViewProps> = ({
                               <CheckCircle2 className="w-5 h-5 text-white" />
                             </div>
                             <div className="flex-1">
-                              <p className="font-semibold text-sm text-green-700">Proceso completado</p>
-                              <p className="text-xs text-slate-500">Documento guardado en base de datos</p>
+                              <p className="font-semibold text-sm text-green-700">
+                                Proceso completado
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                Documento guardado en base de datos
+                              </p>
                             </div>
                           </div>
                         </>
@@ -146,7 +286,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                 )}
 
                 {/* Resultados */}
-                {response && step === 'done' && (
+                {response && step === "done" && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <h3 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
                       <CheckCircle2 className="w-5 h-5" />
@@ -154,16 +294,26 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     </h3>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-green-700 font-medium">ID del documento:</p>
+                        <p className="text-green-700 font-medium">
+                          ID del documento:
+                        </p>
                         <p className="text-green-900">{response.document_id}</p>
                       </div>
                       <div>
-                        <p className="text-green-700 font-medium">Tiempo Gemini:</p>
-                        <p className="text-green-900">{response.gemini_processing_time_seconds}s</p>
+                        <p className="text-green-700 font-medium">
+                          Tiempo Gemini:
+                        </p>
+                        <p className="text-green-900">
+                          {response.gemini_processing_time_seconds}s
+                        </p>
                       </div>
                       <div>
-                        <p className="text-green-700 font-medium">Tiempo total:</p>
-                        <p className="text-green-900">{response.total_processing_time_seconds}s</p>
+                        <p className="text-green-700 font-medium">
+                          Tiempo total:
+                        </p>
+                        <p className="text-green-900">
+                          {response.total_processing_time_seconds}s
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -179,7 +329,9 @@ export const UploadView: React.FC<UploadViewProps> = ({
                 <div className="flex gap-3">
                   <button
                     type="submit"
-                    disabled={!file || step === 'uploading' || step === 'analyzing'}
+                    disabled={
+                      !file || step === "uploading" || step === "analyzing"
+                    }
                     className="flex-1 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <Upload className="w-4 h-4" />
@@ -203,8 +355,12 @@ export const UploadView: React.FC<UploadViewProps> = ({
                 </h3>
                 <ul className="text-sm text-muted-foreground space-y-1 ml-6 list-disc">
                   <li>Los documentos serán procesados automáticamente</li>
-                  <li>Se extraerá información relevante del expediente</li>
-                  <li>Los datos estarán disponibles en la sección de consulta</li>
+                  <li>Se censura información sensible y personal</li>
+                  <li>Se analizan nombres de personas con IA</li>
+                  <li>Se guardan embeddings para búsqueda avanzada</li>
+                  <li>
+                    Los datos estarán disponibles en la sección de consulta
+                  </li>
                 </ul>
               </div>
             </div>

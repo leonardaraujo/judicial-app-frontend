@@ -1,12 +1,12 @@
 // src/services/api.ts
-import axios, { AxiosResponse } from 'axios';
-import { Document, UploadResponse, ApiResponse } from '../models/types';
+import axios, { AxiosResponse } from "axios";
+import { Document, UploadResponse, ApiResponse } from "../models/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 seconds timeout
+  timeout: 100000, // 100 seconds timeout
 });
 
 // Request interceptor for adding headers if needed
@@ -24,7 +24,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error);
+    console.error("API Error:", error);
     return Promise.reject(error);
   }
 );
@@ -32,19 +32,23 @@ api.interceptors.response.use(
 export class DocumentService {
   static async uploadDocument(file: File): Promise<UploadResponse> {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    const response: AxiosResponse<UploadResponse> = await api.post('/analyze_pdf', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response: AxiosResponse<UploadResponse> = await api.post(
+      "/analyze_pdf",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     return response.data;
   }
 
   static async getDocuments(): Promise<Document[]> {
-    const response: AxiosResponse<Document[]> = await api.get('/documents/');
+    const response: AxiosResponse<Document[]> = await api.get("/documents/");
     return response.data;
   }
 
@@ -53,8 +57,14 @@ export class DocumentService {
     return response.data;
   }
 
-  static async updateDocument(id: number, document: Partial<Document>): Promise<Document> {
-    const response: AxiosResponse<Document> = await api.put(`/documents/${id}`, document);
+  static async updateDocument(
+    id: number,
+    document: Partial<Document>
+  ): Promise<Document> {
+    const response: AxiosResponse<Document> = await api.put(
+      `/documents/${id}`,
+      document
+    );
     return response.data;
   }
 
@@ -63,8 +73,17 @@ export class DocumentService {
   }
 
   static async downloadDocument(id: number): Promise<Blob> {
-    const response: AxiosResponse<Blob> = await api.get(`/documents/download/${id}`, {
-      responseType: 'blob',
+    const response: AxiosResponse<Blob> = await api.get(
+      `/documents/download/${id}`,
+      {
+        responseType: "blob",
+      }
+    );
+    return response.data;
+  }
+  static async searchEmbedding(query: string): Promise<any> {
+    const response: AxiosResponse<any> = await api.get("/search", {
+      params: { query },
     });
     return response.data;
   }
