@@ -1,24 +1,40 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useDocuments, useDocumentSearch } from '../../hooks/useDocuments';
-import { DocumentsView } from '../../components/views/DocumentsView';
-import { UI_MESSAGES } from '../../lib/constants';
-import { Document } from '../../models/types';
+import { useState } from "react";
+import { useDocuments, useDocumentSearch } from "../../hooks/useDocuments";
+import { DocumentsView } from "../../components/views/DocumentsView";
+import { UI_MESSAGES } from "../../lib/constants";
+import { Document } from "../../models/types";
+import RoleProtectedRoute from "../components/RoleProtectedRoute";
 
 export default function ConsultarPage() {
-  const { documents, loading, error, updateDocument, deleteDocument, downloadDocument } = useDocuments();
-  const { searchTerm, setSearchTerm, filteredDocuments } = useDocumentSearch(documents);
+  const {
+    documents,
+    loading,
+    error,
+    updateDocument,
+    deleteDocument,
+    downloadDocument,
+  } = useDocuments();
+  const { searchTerm, setSearchTerm, filteredDocuments } =
+    useDocumentSearch(documents);
 
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState<Document>({
     id: 0,
-    case_number: '',
-    case_year: '',
-    crime: '',
-    verdict: '',
+    case_number: "",
+    case_year: "",
+    crime: "",
+    verdict: "",
     cited_jurisprudence: [],
-    file_path: '',
+    file_path: "",
+    uploaded_by: "",
+    created_at: "",
+    user: {
+      first_name: "",
+      last_name: "",
+      email: "",
+    },
   });
 
   const handleEdit = (index: number) => {
@@ -58,24 +74,26 @@ export default function ConsultarPage() {
   };
 
   const handleEditFormChange = (field: keyof Document, value: any) => {
-    setEditFormData(prev => ({ ...prev, [field]: value }));
+    setEditFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
-    <DocumentsView
-      documents={filteredDocuments}
-      loading={loading}
-      error={error}
-      searchTerm={searchTerm}
-      editIdx={editIdx}
-      onSearchChange={setSearchTerm}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-      onDownload={handleDownload}
-      onEditSubmit={handleEditSubmit}
-      onEditCancel={() => setEditIdx(null)}
-      editFormData={editFormData}
-      onEditFormChange={handleEditFormChange}
-    />
+    <RoleProtectedRoute allowedRoles={["admin"]}>
+      <DocumentsView
+        documents={filteredDocuments}
+        loading={loading}
+        error={error}
+        searchTerm={searchTerm}
+        editIdx={editIdx}
+        onSearchChange={setSearchTerm}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onDownload={handleDownload}
+        onEditSubmit={handleEditSubmit}
+        onEditCancel={() => setEditIdx(null)}
+        editFormData={editFormData}
+        onEditFormChange={handleEditFormChange}
+      />
+    </RoleProtectedRoute>
   );
 }

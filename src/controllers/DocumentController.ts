@@ -2,7 +2,7 @@
 
 import { Document, UploadResponse, UploadStep } from "../models/types";
 import { DocumentService } from "../services/api";
-
+import { SearchDocumentResult } from "../models/types";
 interface SearchResult {
   id: number;
   version: number;
@@ -13,12 +13,6 @@ interface SearchResult {
     full_text: string;
     text: string;
   };
-}
-
-interface GroupedResult {
-  document_id: number;
-  mainChunk: SearchResult;
-  otherChunks: SearchResult[];
 }
 
 export class DocumentController {
@@ -126,48 +120,25 @@ export class DocumentController {
         doc.case_year.includes(term)
     );
   }
-  static async searchEmbedding(query: string): Promise<GroupedResult[]> {
+  static async searchEmbedding(query: string): Promise<SearchDocumentResult[]> {
     try {
       const data = await DocumentService.searchEmbedding(query);
-      console.log("data:", data); // Debug
       if (!data || !data.results) return [];
-      return groupResults(data.results);
+      return data.results; // Ya viene listo del backend
     } catch (error) {
       console.error("Search embedding error:", error);
       throw new Error("Error al buscar por embedding");
     }
   }
-}
-
-function groupResults(results: SearchResult[]): GroupedResult[] {
-  console.log("results:", results); // Debug
-  if (!results || !Array.isArray(results)) return [];
-  const grouped: { [key: string]: SearchResult[] } = {};
-  results.forEach((result) => {
-    console.log("result:", result); // Debug
-    if (
-      !result ||
-      !result.payload ||
-      typeof result.payload.document_id === "undefined"
-    )
-      return;
-    const docId = result.payload.document_id.toString();
-    if (!grouped[docId]) grouped[docId] = [];
-    grouped[docId].push(result);
-  });
-  console.log("grouped:", grouped); // Debug
-
-  return Object.keys(grouped)
-    .map((docId) => {
-      const chunks = grouped[docId];
-      console.log("docId:", docId, "chunks:", chunks); // Debug
-      if (!chunks || !Array.isArray(chunks) || chunks.length === 0) return null;
-      chunks.sort((a, b) => b.score - a.score);
-      return {
-        document_id: parseInt(docId),
-        mainChunk: chunks[0],
-        otherChunks: chunks.slice(1),
-      };
-    })
-    .filter(Boolean) as GroupedResult[];
+  static async fetchDocumentById(id: number): Promise<Document> {
+    try {
+      return await DocumentService.getDocumentById(id);
+    } catch (error) {
+      console.error("Fetch document by id error:", error);
+      throw new Error("Error al cargar el documento");
+    }
+  }
+  static async getIaResume(documentId: number): Promise<string> {
+    return await DocumentService.getIaResume(documentId);
+  }
 }

@@ -1,12 +1,21 @@
 // src/models/types.ts
 export interface Document {
   id: number;
+  uploaded_by: string;
+  file_path: string;
+  created_at: string;
   case_number: string;
   case_year: string;
   crime: string;
   verdict: string;
-  cited_jurisprudence: string[];
-  file_path: string;
+  cited_jurisprudence: any[];
+  user: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  resume?: string;
+  // agrega aquí cualquier otro campo que devuelva la API
 }
 
 export interface DocumentMetadata {
@@ -32,13 +41,31 @@ export interface UploadResponse {
   msg: string;
 }
 
-export type UploadStep = 'idle' | 'uploading' | 'analyzing' | 'done';
+export type UploadStep = "idle" | "uploading" | "analyzing" | "done";
 
 export type VerdictType =
-  | 'Absuelto'
-  | 'Culpable'
-  | 'Sobreseído'
-  | 'Archivado'
-  | 'Prescrito'
-  | 'Desestimado'
-  | 'Nulidad';
+  | "Absuelto"
+  | "Culpable"
+  | "Sobreseído"
+  | "Archivado"
+  | "Prescrito"
+  | "Desestimado"
+  | "Nulidad";
+
+export interface SearchDocumentResult {
+  document_id: number;
+  metadata: {
+    id: number;
+    case_number: string;
+    case_year: string;
+    crime: string;
+    verdict: string;
+    cited_jurisprudence: string[];
+  };
+  chunk: {
+    score: number;
+    chunk_index: number;
+    text: string;
+    full_text: string;
+  };
+}

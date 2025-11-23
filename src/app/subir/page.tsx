@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useDocumentUpload } from '../../hooks/useDocuments';
-import { UploadView } from "../../components/views/UploadView"
-
+import { useDocumentUpload } from "../../hooks/useDocuments";
+import { UploadView } from "../../components/views/UploadView";
+import RoleProtectedRoute from "../components/RoleProtectedRoute";
 export default function SubirPage() {
   const uploadState = useDocumentUpload();
 
@@ -22,13 +22,15 @@ export default function SubirPage() {
   };
 
   return (
-    <UploadView
-      file={uploadState.file}
-      step={uploadState.step}
-      response={uploadState.response}
-      error={uploadState.error}
-      onFileChange={handleFileChange}
-      onSubmit={handleSubmit}
-    />
+    <RoleProtectedRoute allowedRoles={["admin"]}>
+      <UploadView
+        file={uploadState.file}
+        step={uploadState.step}
+        response={uploadState.response} 
+        error={uploadState.error}
+        onFileChange={handleFileChange}
+        onSubmit={handleSubmit}
+      />
+    </RoleProtectedRoute>
   );
 }
